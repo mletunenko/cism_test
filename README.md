@@ -18,3 +18,6 @@ API Endpoints
 	•	GET /api/v1/tasks/{task_id} - получение информации о задаче
 	•	DELETE /api/v1/tasks/{task_id} - отмена задачи
 	•	GET /api/v1/tasks/{task_id}/status - получение статуса задачи
+
+
+! о подключении в rmq и паттерне transactional outbox
