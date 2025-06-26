@@ -2,17 +2,20 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import UUID4
 
 from db.postgres import SessionDep
+from db.rabbit import RabbitDep
+from messaging.publisher import TaskPublisher
 from models import TaskModel
 from schemas.task import TaskIn, TaskOut, TaskStatusResponse, TaskListParams
 from services.task import TaskService
-from utils.enums import ClientErrorMessage, TaskStatusEnum
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.post("", summary="Создать новую задачу", response_model=TaskOut)
-async def create_task(data: TaskIn, session: SessionDep) -> TaskModel:
+async def create_task(data: TaskIn, session: SessionDep, rabbit_channel: RabbitDep,
+) -> TaskModel:
     task = await TaskService.create_task(data, session)
+    await TaskPublisher.create_task(task, rabbit_channel)
     return task
 
 

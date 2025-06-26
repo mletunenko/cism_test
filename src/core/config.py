@@ -15,6 +15,12 @@ class DatabaseConfig(BaseModel):
     max_overflow: int = 10
 
 
+class RabbitConfig(BaseModel):
+    host: str = "localhost"
+    login: str = "guest"
+    password: str = "guest"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(".env"),
@@ -24,6 +30,7 @@ class Settings(BaseSettings):
     )
     run: RunConfig = RunConfig()
     db: DatabaseConfig = DatabaseConfig()
+    rabbit: RabbitConfig = RabbitConfig()
 
 
 settings = Settings()
