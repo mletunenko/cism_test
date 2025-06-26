@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 120
+#exclude = [
+#    "tests/",
+#]
+
+[tool.ruff.lint]
+select = ["I", "Q", "E", "ANN", "F"]
+#ignore = ["ANN201", "ANN001", "ANN401",  "ANN002", "ANN003", "E712", "E721"]
+
+
+
