@@ -40,7 +40,7 @@ class RabbitMQConnection:
     async def declare_queues(self) -> None:
         channel = await self.get_channel()
         if channel:
-            await channel.declare_queue(TASKS_QUEUE, durable=True)
+            await channel.declare_queue(TASKS_QUEUE, durable=True, arguments={"x-max-priority": 10},)
 
 
 rabbitmq = RabbitMQConnection()
