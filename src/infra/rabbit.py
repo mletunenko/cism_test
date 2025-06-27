@@ -16,7 +16,7 @@ class RabbitMQConnection:
     def __init__(self) -> None:
         self.connection = None
 
-    async def connect(self) -> AbstractConnection|None:
+    async def connect(self) -> AbstractConnection | None:
         if not self.connection or self.connection.is_closed:
             self.connection = await aio_pika.connect_robust(
                 host=settings.rabbit.host,
@@ -25,7 +25,7 @@ class RabbitMQConnection:
             )
         return self.connection
 
-    async def get_channel(self) -> AbstractChannel|None:
+    async def get_channel(self) -> AbstractChannel | None:
         try:
             connection = await self.connect()
             return await connection.channel()
@@ -40,20 +40,23 @@ class RabbitMQConnection:
     async def declare_queues(self) -> None:
         channel = await self.get_channel()
         if channel:
-            await channel.declare_queue(TASKS_QUEUE, durable=True, arguments={"x-max-priority": 10},)
+            await channel.declare_queue(
+                TASKS_QUEUE,
+                durable=True,
+                arguments={"x-max-priority": 10},
+            )
 
 
 rabbitmq = RabbitMQConnection()
 
 
-async def get_rabbitmq_channel() -> AbstractChannel|None:
+async def get_rabbitmq_channel() -> AbstractChannel | None:
     channel = await rabbitmq.get_channel()
     if channel:
         async with await rabbitmq.get_channel() as channel:
             yield channel
     else:
         yield None
-
 
 
 RabbitDep = Annotated[AbstractChannel, Depends(get_rabbitmq_channel)]

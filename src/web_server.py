@@ -22,7 +22,6 @@ app.include_router(combined_router)
 
 if __name__ == "__main__":
     logger.info("Запуск сервиса управления задачами...")
-    # rabbit = RabbitMQConnection()
     asyncio.run(rabbitmq.declare_queues())
     uvicorn.run("web_server:app", host=settings.run.host, port=settings.run.port, reload=True)
     logger.info("Остановка сервиса управления задачами...")

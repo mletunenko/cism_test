@@ -12,8 +12,7 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.post("", summary="Создать новую задачу", response_model=TaskOut)
-async def create_task(data: TaskIn, session: SessionDep, rabbit: RabbitDep
-) -> TaskModel:
+async def create_task(data: TaskIn, session: SessionDep, rabbit: RabbitDep) -> TaskModel:
     task = await TaskService.create_task(data, session)
     await TaskPublisher.create_task(task, rabbit)
     return task

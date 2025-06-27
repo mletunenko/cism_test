@@ -30,12 +30,11 @@ class TaskListParams(BaseModel):
     title: str | None = None
     priority: TaskPriorityEnum | None = None
     status: TaskStatusEnum | None = None
-    started_after : datetime | None = None
-    started_before : datetime | None = None
-    completed_after : datetime | None = None
-    completed_before : datetime | None = None
+    started_after: datetime | None = None
+    started_before: datetime | None = None
+    completed_after: datetime | None = None
+    completed_before: datetime | None = None
     pagination: PaginationParams = Depends()
-
 
     def build_filters(self) -> list:
         filters = []
