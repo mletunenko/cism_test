@@ -1,4 +1,4 @@
 # app constants
 
 # queue names
-NEW_TASKS_QUEUE: str = "new_tasks"
+TASKS_QUEUE: str = "tasks_queue"

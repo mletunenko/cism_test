@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from pydantic import UUID4
 
 from db.postgres import SessionDep
+from infra.rabbit import RabbitDep
 from messaging.publisher import TaskPublisher
 from models import TaskModel
 from schemas.task import TaskIn, TaskListParams, TaskOut, TaskStatusResponse
@@ -11,10 +12,10 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.post("", summary="Создать новую задачу", response_model=TaskOut)
-async def create_task(data: TaskIn, session: SessionDep,
+async def create_task(data: TaskIn, session: SessionDep, rabbit: RabbitDep
 ) -> TaskModel:
     task = await TaskService.create_task(data, session)
-    await TaskPublisher.create_task(task)
+    await TaskPublisher.create_task(task, rabbit)
     return task
 
 

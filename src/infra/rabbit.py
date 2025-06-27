@@ -1,45 +1,59 @@
-from aio_pika import Channel, connect_robust
+import logging
+from typing import Annotated
+
+import aio_pika
+from aio_pika.abc import AbstractChannel, AbstractConnection
 from aio_pika.exceptions import AMQPException
-from infra.logger import logger
-from typing import Optional
-from core.consts import NEW_TASKS_QUEUE
+from fastapi import Depends
+
 from core.config import settings
+from core.consts import TASKS_QUEUE
+
+logger = logging.getLogger(__name__)
 
 
-class RabbitMQManager:
-    _channel: Optional[Channel] = None
-    _connection = None
+class RabbitMQConnection:
+    def __init__(self) -> None:
+        self.connection = None
 
-    @classmethod
-    async def init(cls):
-        await cls._connect_and_setup()
-
-    @classmethod
-    async def _connect_and_setup(cls):
-        try:
-            cls._connection = await connect_robust(
+    async def connect(self) -> AbstractConnection|None:
+        if not self.connection or self.connection.is_closed:
+            self.connection = await aio_pika.connect_robust(
                 host=settings.rabbit.host,
                 login=settings.rabbit.login,
                 password=settings.rabbit.password,
             )
-            cls._channel = await cls._connection.channel()
-            await cls._channel.declare_queue(NEW_TASKS_QUEUE, durable=True)
-            logger.info("RabbitMQ подключён.")
+        return self.connection
+
+    async def get_channel(self) -> AbstractChannel|None:
+        try:
+            connection = await self.connect()
+            return await connection.channel()
         except AMQPException as e:
             logger.warning(f"Ошибка подключения к RabbitMQ: {e}")
-            cls._channel = None
+            return None
 
-    @classmethod
-    async def get_channel(cls) -> Optional[Channel]:
-        if cls._channel and not cls._channel.is_closed:
-            return cls._channel
-        logger.warning("Канал RabbitMQ закрыт, пробуем пересоздать...")
-        await cls._connect_and_setup()
-        return cls._channel
+    async def close(self) -> None:
+        if self.connection:
+            self.connection.close()
 
-    @classmethod
-    async def close(cls):
-        if cls._channel and not cls._channel.is_closed:
-            await cls._channel.close()
-        if cls._connection and not cls._connection.is_closed:
-            await cls._connection.close()
+    async def declare_queues(self) -> None:
+        channel = await self.get_channel()
+        if channel:
+            await channel.declare_queue(TASKS_QUEUE, durable=True)
+
+
+rabbitmq = RabbitMQConnection()
+
+
+async def get_rabbitmq_channel() -> AbstractChannel|None:
+    channel = await rabbitmq.get_channel()
+    if channel:
+        async with await rabbitmq.get_channel() as channel:
+            yield channel
+    else:
+        yield None
+
+
+
+RabbitDep = Annotated[AbstractChannel, Depends(get_rabbitmq_channel)]
