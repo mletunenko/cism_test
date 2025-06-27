@@ -14,7 +14,7 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 @router.post("", summary="Создать новую задачу", response_model=TaskOut)
 async def create_task(data: TaskIn, session: SessionDep, rabbit: RabbitDep) -> TaskModel:
     task = await TaskService.create_task(data, session)
-    await TaskPublisher.create_task(task, rabbit)
+    await TaskPublisher.publish_task_message(task, session, rabbit)
     return task
 
 
@@ -25,13 +25,13 @@ async def list_task(session: SessionDep, query_params: TaskListParams = Depends(
 
 
 @router.get("/{task_id}", summary="Получить задачу по id", response_model=TaskOut)
-async def task_by_id(task_id: UUID4, session: SessionDep) -> TaskModel:
+async def get_task_by_id(task_id: UUID4, session: SessionDep) -> TaskModel:
     task = await TaskService.get_task_by_id(task_id, session)
     return task
 
 
 @router.get("/{task_id}/status", summary="Получить статус задачи", response_model=TaskStatusResponse)
-async def task_status(task_id: UUID4, session: SessionDep) -> TaskStatusResponse:
+async def get_task_status(task_id: UUID4, session: SessionDep) -> TaskStatusResponse:
     task = await TaskService.get_task_by_id(task_id, session)
     return task
 

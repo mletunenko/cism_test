@@ -6,7 +6,7 @@ from starlette.status import HTTP_404_NOT_FOUND
 
 from models import TaskModel
 from schemas.task import TaskIn, TaskListParams
-from utils.enums import ClientErrorMessage
+from utils.enums import ClientErrorMessage, TaskStatusEnum
 
 
 class TaskService:
@@ -43,3 +43,9 @@ class TaskService:
                 detail=ClientErrorMessage.NOT_FOUND_TASK_ERROR.value,
             )
         return task
+
+    @staticmethod
+    async def update_task_status(task_id: UUID4, session: AsyncSession, status: TaskStatusEnum) -> TaskModel:
+        task = TaskService.get_task_by_id(task_id, session)
+        task.status = status
+        await session.commit()
