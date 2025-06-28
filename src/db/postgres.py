@@ -18,4 +18,8 @@ async def get_session() -> AsyncSession:
         yield session
 
 
+async def get_session_context() -> AsyncSession:
+    return new_session()
+
+
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
