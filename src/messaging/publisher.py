@@ -1,16 +1,14 @@
 import json
-import logging
 
 from aio_pika import Message
 from aio_pika.abc import AbstractChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.consts import PRIORITY_MAP, TASKS_QUEUE
+from core.logger import logger
 from schemas.task import TaskOut
 from services.task import TaskService
 from utils.enums import TaskStatusEnum
-
-logger = logging.getLogger(__name__)
 
 
 class TaskPublisher:
