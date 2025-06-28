@@ -25,6 +25,10 @@ async def process_task(message: IncomingMessage) -> None:
                 logger.warning(f"Задача {task_id} не найдена")
                 await message.ack()
                 return
+            if task.status == TaskStatusEnum.CANCELLED:
+                logger.info(f"Задача {task_id} отменена")
+                await message.ack()
+                return
 
             try:
                 task.status = TaskStatusEnum.IN_PROGRESS

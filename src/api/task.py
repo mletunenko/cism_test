@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import UUID4
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
 from db.postgres import SessionDep
 from infra.rabbit import RabbitDep
@@ -7,6 +8,7 @@ from messaging.publisher import TaskPublisher
 from models import TaskModel
 from schemas.task import TaskIn, TaskListParams, TaskOut, TaskStatusResponse
 from services.task import TaskService
+from utils.enums import ClientErrorMessage, TaskStatusEnum
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -36,14 +38,27 @@ async def get_task_status(task_id: UUID4, session: SessionDep) -> TaskStatusResp
     return task
 
 
-# @router.delete("/{task_id}", summary="Отменить задачу")
-# async def cancel_task(task_id: UUID4, session: SessionDep):
-#     task = TaskService.get_task_by_id(task_id, session)
-#
-#     if task.status in [
-#         TaskStatusEnum.COMPLETED,
-#         TaskStatusEnum.FAILED,
-#         TaskStatusEnum.CANCELLED,
-#         TaskStatusEnum.IN_PROGRESS,
-#     ]:
-#         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=ClientErrorMessage.CANNOT_CANCEL_TASK_ERROR)
+@router.delete("/{task_id}", summary="Отменить задачу")
+async def cancel_task(task_id: UUID4, session: SessionDep) -> Response:
+    task = await TaskService.get_task_by_id(task_id, session)
+    # отменяем только NEW и PENDING
+    if task.status in [
+        TaskStatusEnum.COMPLETED,
+        TaskStatusEnum.FAILED,
+        TaskStatusEnum.CANCELLED,
+        TaskStatusEnum.IN_PROGRESS,
+    ]:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=ClientErrorMessage.CANNOT_CANCEL_TASK_ERROR)
+
+    try:
+        await TaskService.update_task_status(
+            task_id=task_id,
+            status=TaskStatusEnum.CANCELLED,
+            session=session,
+        )
+
+        session.commit()
+        return {"message": "Задача успешно отменена", "task_id": str(task_id), "status": TaskStatusEnum.CANCELLED.value}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ошибка при отмене задачи: {str(e)}")
