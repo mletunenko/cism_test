@@ -1,4 +1,3 @@
-import logging
 from typing import Annotated
 
 import aio_pika
@@ -8,8 +7,7 @@ from fastapi import Depends
 
 from core.config import settings
 from core.consts import TASKS_QUEUE
-
-logger = logging.getLogger(__name__)
+from core.logger import logger
 
 
 class RabbitMQConnection:
@@ -31,6 +29,9 @@ class RabbitMQConnection:
             return await connection.channel()
         except AMQPException as e:
             logger.warning(f"Ошибка подключения к RabbitMQ: {e}")
+            return None
+        except RuntimeError:
+            logger.warning("Соединение с RabbitMQ закрыто")
             return None
 
     async def close(self) -> None:
