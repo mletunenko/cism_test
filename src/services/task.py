@@ -46,6 +46,6 @@ class TaskService:
 
     @staticmethod
     async def update_task_status(task_id: UUID4, session: AsyncSession, status: TaskStatusEnum) -> TaskModel:
-        task = TaskService.get_task_by_id(task_id, session)
+        task = await TaskService.get_task_by_id(task_id, session)
         task.status = status
         await session.commit()

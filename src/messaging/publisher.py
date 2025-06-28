@@ -25,4 +25,4 @@ class TaskPublisher:
             Message(body=json_body.encode(), priority=PRIORITY_MAP[data.priority]),
             routing_key=TASKS_QUEUE,
         )
-        TaskService.update_task_status(data.id, session, TaskStatusEnum.PENDING)
+        await TaskService.update_task_status(data.id, session, TaskStatusEnum.PENDING)
