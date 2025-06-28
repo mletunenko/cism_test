@@ -19,6 +19,31 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  tasks_app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "
+      /scripts/wait-for-it.sh postgres:5432 -s -t 60 &&
+      /scripts/wait-for-it.sh rabbitmq:5672 -s -t 60 &&
+      alembic upgrade head &&
+      gunicorn -w 4 -k uvicorn.workers.UvicornWorker web_server:app --bind 0.0.0.0:8000
+      "
+
+  tasks_worker:
+    build: .
+    env_file:
+      - .env
+    command: >
+      sh -c "
+      /scripts/wait-for-it.sh postgres:5432 -s -t 60 &&
+      /scripts/wait-for-it.sh rabbitmq:5672 -s -t 60 &&
+      alembic upgrade head &&
+      python worker.py
+      "
 
 volumes:
   postgres_data:
