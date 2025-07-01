@@ -49,3 +49,4 @@ class TaskService:
         task = await TaskService.get_task_by_id(task_id, session)
         task.status = status
         await session.commit()
+        return task
