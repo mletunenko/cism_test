@@ -3,7 +3,7 @@ import asyncio
 import uvicorn
 from fastapi import APIRouter, FastAPI
 
-from api.task import router as tasks_router
+from api.tasks import router as tasks_router
 from core.config import settings
 from core.logger import logger
 from infra.rabbit import rabbitmq
