@@ -9,7 +9,7 @@ from utils.enums import TaskPriorityEnum, TaskStatusEnum
 
 
 class TaskIn(BaseModel):
-    title: str
+    title: str = ""
     description: str = ""
     priority: TaskPriorityEnum = TaskPriorityEnum.MEDIUM
 
