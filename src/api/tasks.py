@@ -58,5 +58,4 @@ async def cancel_task(task_id: UUID4, session: SessionDep) -> TaskStatusResponse
         )
         return task
     except Exception as e:
-        session.rollback()
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ошибка при отмене задачи: {str(e)}")
