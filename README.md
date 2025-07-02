@@ -21,9 +21,9 @@
 docker-compose up --build
 ```
 ## Работа с API
-Документация доступна по адресу
-DELETE /api/v1/tasks/{task_id}
-Удаление из RabbitMQ невозможно, если задача уже доставлена воркеру
+Документация доступна по адресу _host:8000/docs_
+
+```DELETE /api/v1/tasks/{task_id}``` - Удаление из RabbitMQ невозможно, если задача уже доставлена воркеру
 
 ## RabbitMQ: Очередь с приоритетом
 
@@ -62,6 +62,18 @@ DELETE /api/v1/tasks/{task_id}
 - Ошибка обработки задачи
 - RabbitMQ не отвечает
 
+## Тестирование
+
+1. Поднять окружение
+
+```bash
+docker compose -f src/tests/integration/docker-compose.test.yml up -d
+```
+
+2. Запустить тесты
+```bash
+pytest .
+```
 ## Возможные улучшения
 
 - Реализация повторной отправки задач при восстановлении RabbitMQ 
